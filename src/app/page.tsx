@@ -26,7 +26,7 @@ export default function Home() {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setImage(file);
-      
+
       // Create image preview
       const reader = new FileReader();
       reader.onload = () => {
@@ -45,7 +45,7 @@ export default function Home() {
   // Handle form submission
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     if (!image || !prompt.trim()) {
       return;
     }
@@ -78,7 +78,7 @@ export default function Home() {
           type: "bot",
           text: data.response,
         };
-        
+
         setMessages((prevMessages) => [...prevMessages, newBotMessage]);
       } else {
         throw new Error(data.error || "Failed to get response");
@@ -90,14 +90,14 @@ export default function Home() {
         type: "bot",
         text: "Sorry, there was an error processing your request. Please try again.",
       };
-      
+
       setMessages((prevMessages) => [...prevMessages, errorMessage]);
     } finally {
       setIsLoading(false);
       setPrompt("");
       setImage(null);
       setImagePreview(null);
-      
+
       setTimeout(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
       }, 100);
@@ -107,7 +107,7 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center bg-gradient-to-br from-indigo-50 to-blue-100">
       <div className="w-full max-w-4xl px-4 py-8">
-        <motion.div 
+        <motion.div
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5 }}
@@ -122,7 +122,7 @@ export default function Home() {
         </motion.div>
 
         {/* Chat container */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
@@ -147,11 +147,10 @@ export default function Home() {
                     className={`mb-4 flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`max-w-[80%] rounded-2xl p-4 ${
-                        message.type === "user"
+                      className={`max-w-[80%] rounded-2xl p-4 ${message.type === "user"
                           ? "bg-indigo-600 text-white"
                           : "bg-gray-100 text-gray-800"
-                      }`}
+                        }`}
                     >
                       {message.image && (
                         <div className="mb-3 rounded-lg overflow-hidden">
@@ -180,9 +179,8 @@ export default function Home() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleUploadClick}
-                className={`relative cursor-pointer flex-1 rounded-xl h-32 flex items-center justify-center border-2 border-dashed ${
-                  imagePreview ? "border-indigo-300" : "border-gray-300"
-                }`}
+                className={`relative cursor-pointer flex-1 rounded-xl h-32 flex items-center justify-center border-2 border-dashed ${imagePreview ? "border-indigo-300" : "border-gray-300"
+                  }`}
               >
                 <input
                   type="file"
