@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useRef, ChangeEvent, FormEvent } from "react";
+import { useState, useRef, ChangeEvent, FormEvent, DragEvent } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import React from "react";
+import React, { useEffect } from "react";
 
 interface Message {
   id: string;
@@ -18,21 +18,27 @@ export default function Home() {
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const dropAreaRef = useRef<HTMLDivElement>(null);
 
-  // Handle image upload
+  // Handle image from various sources (file input, drag & drop, paste)
+  const processImage = (file: File) => {
+    setImage(file);
+
+    // Create image preview
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Handle image upload via file input
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setImage(file);
-
-      // Create image preview
-      const reader = new FileReader();
-      reader.onload = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      processImage(e.target.files[0]);
     }
   };
 
@@ -41,6 +47,69 @@ export default function Home() {
       fileInputRef.current.click();
     }
   };
+
+  // Handle drag and drop events
+  const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
+      
+      // Check if the file is an image
+      if (file.type.startsWith('image/')) {
+        processImage(file);
+      }
+    }
+  };
+
+  // Handle paste events
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      if (e.clipboardData && e.clipboardData.items) {
+        // Loop through clipboard items
+        for (let i = 0; i < e.clipboardData.items.length; i++) {
+          const item = e.clipboardData.items[i];
+          
+          // Check if the item is an image
+          if (item.type.indexOf('image') !== -1) {
+            const file = item.getAsFile();
+            if (file) {
+              processImage(file);
+              break;
+            }
+          }
+        }
+      }
+    };
+
+    // Add paste event listener to the document
+    document.addEventListener('paste', handlePaste);
+
+    // Cleanup
+    return () => {
+      document.removeEventListener('paste', handlePaste);
+    };
+  }, []);
 
   // Handle form submission
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -104,6 +173,15 @@ export default function Home() {
     }
   };
 
+  // Clear image handler
+  const handleClearImage = () => {
+    setImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   return (
     <main className="flex min-h-screen flex-col items-center bg-gradient-to-br from-indigo-50 to-blue-100">
       <div className="w-full max-w-4xl px-4 py-8">
@@ -117,7 +195,7 @@ export default function Home() {
             Chat with Images
           </h1>
           <p className="text-gray-600">
-            Upload an image (less than 10mb) and ask questions about it
+            Upload, drag & drop, or paste an image (less than 10mb) and ask questions about it
           </p>
         </motion.div>
 
@@ -134,7 +212,7 @@ export default function Home() {
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <p>Upload an image and start the conversation</p>
+                <p>Upload, drag & drop, or paste an image to start the conversation</p>
               </div>
             ) : (
               <AnimatePresence>
@@ -176,11 +254,21 @@ export default function Home() {
           <form onSubmit={handleSubmit} className="border-t border-gray-200 p-4">
             <div className="flex items-center mb-4">
               <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                ref={dropAreaRef}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={handleUploadClick}
-                className={`relative cursor-pointer flex-1 rounded-xl h-32 flex items-center justify-center border-2 border-dashed ${imagePreview ? "border-indigo-300" : "border-gray-300"
-                  }`}
+                onDragEnter={handleDragEnter}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={`relative cursor-pointer flex-1 rounded-xl h-32 flex items-center justify-center border-2 border-dashed transition-colors duration-200 ${
+                  isDragging 
+                    ? "border-indigo-500 bg-indigo-50" 
+                    : imagePreview 
+                      ? "border-indigo-300" 
+                      : "border-gray-300"
+                }`}
               >
                 <input
                   type="file"
@@ -196,13 +284,30 @@ export default function Home() {
                       alt="Preview"
                       className="w-full h-full object-contain"
                     />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleClearImage();
+                      }}
+                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 focus:outline-none"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
                   </div>
                 ) : (
                   <div className="text-center p-4">
                     <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                     </svg>
-                    <p className="mt-2 text-sm text-gray-500">Upload an image</p>
+                    <p className="mt-2 text-sm text-gray-500">
+                      {isDragging 
+                        ? "Drop image here" 
+                        : "Upload, drag & drop, or paste an image"}
+                    </p>
+                    <p className="mt-1 text-xs text-gray-400">Click, drag & drop, or Ctrl+V to paste</p>
                   </div>
                 )}
               </motion.div>
