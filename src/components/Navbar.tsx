@@ -76,36 +76,36 @@ export const NavBar = () => {
   );
 };
 
-const NavLink = ({ href, children }: { href: string; children: React.ReactNode }) => {
-  return (
-    <Link
-      href={href}
-      className="text-foreground/80 hover:text-foreground font-medium relative overflow-hidden group transition-colors duration-300"
-    >
-      {children}
-      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300 ease-in-out"></span>
-    </Link>
-  );
-};
+// const NavLink = ({ href, children }: { href: string; children: React.ReactNode }) => {
+//   return (
+//     <Link
+//       href={href}
+//       className="text-foreground/80 hover:text-foreground font-medium relative overflow-hidden group transition-colors duration-300"
+//     >
+//       {children}
+//       <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300 ease-in-out"></span>
+//     </Link>
+//   );
+// };
 
-const MobileNavLink = ({
-  href,
-  onClick,
-  children
-}: {
-  href: string;
-  onClick: () => void;
-  children: React.ReactNode
-}) => {
-  return (
-    <Link
-      href={href}
-      className="text-foreground py-2 px-4 rounded-lg hover:bg-secondary transition-colors block"
-      onClick={onClick}
-    >
-      {children}
-    </Link>
-  );
-};
+// const MobileNavLink = ({
+//   href,
+//   onClick,
+//   children
+// }: {
+//   href: string;
+//   onClick: () => void;
+//   children: React.ReactNode
+// }) => {
+//   return (
+//     <Link
+//       href={href}
+//       className="text-foreground py-2 px-4 rounded-lg hover:bg-secondary transition-colors block"
+//       onClick={onClick}
+//     >
+//       {children}
+//     </Link>
+//   );
+// };
 
 export default NavBar;
