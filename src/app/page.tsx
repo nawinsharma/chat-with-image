@@ -4,6 +4,8 @@ import { useState, useRef, ChangeEvent, FormEvent, DragEvent } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useEffect } from "react";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
 
 interface Message {
   id: string;
@@ -22,6 +24,7 @@ export default function Home() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const dropAreaRef = useRef<HTMLDivElement>(null);
+  const { data: session } = useSession();
 
   const processImage = (file: File) => {
     setImage(file);
@@ -72,7 +75,7 @@ export default function Home() {
 
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
-      
+
       // Check if the file is an image
       if (file.type.startsWith('image/')) {
         processImage(file);
@@ -85,7 +88,7 @@ export default function Home() {
       if (e.clipboardData && e.clipboardData.items) {
         for (let i = 0; i < e.clipboardData.items.length; i++) {
           const item = e.clipboardData.items[i];
-          
+
           if (item.type.indexOf('image') !== -1) {
             const file = item.getAsFile();
             if (file) {
@@ -219,8 +222,8 @@ export default function Home() {
                   >
                     <div
                       className={`max-w-[80%] rounded-2xl p-4 ${message.type === "user"
-                          ? "bg-indigo-600 text-white"
-                          : "bg-gray-100 text-gray-800"
+                        ? "bg-indigo-600 text-white"
+                        : "bg-gray-100 text-gray-800"
                         }`}
                     >
                       {message.image && (
@@ -255,13 +258,12 @@ export default function Home() {
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
-                className={`relative cursor-pointer flex-1 rounded-xl h-32 flex items-center justify-center border-2 border-dashed transition-colors duration-200 ${
-                  isDragging 
-                    ? "border-indigo-500 bg-indigo-50" 
-                    : imagePreview 
-                      ? "border-indigo-300" 
+                className={`relative cursor-pointer flex-1 rounded-xl h-32 flex items-center justify-center border-2 border-dashed transition-colors duration-200 ${isDragging
+                    ? "border-indigo-500 bg-indigo-50"
+                    : imagePreview
+                      ? "border-indigo-300"
                       : "border-gray-300"
-                }`}
+                  }`}
               >
                 <input
                   type="file"
@@ -296,8 +298,8 @@ export default function Home() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                     </svg>
                     <p className="mt-2 text-sm text-gray-500">
-                      {isDragging 
-                        ? "Drop image here" 
+                      {isDragging
+                        ? "Drop image here"
                         : "Upload, drag & drop, or paste an image"}
                     </p>
                     <p className="mt-1 text-xs text-gray-400">Click, drag & drop, or Ctrl+V to paste</p>
@@ -336,6 +338,11 @@ export default function Home() {
             </div>
           </form>
         </motion.div>
+      </div>
+      <div>
+        {
+          !session ? <div>please login to see your past chats</div> : <Link href="/dashboard" className="text-blue-500 hover:text-blue-700 underline font-bold text-xl ">see your past chats here</Link>
+        }
       </div>
     </main>
   );
