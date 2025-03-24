@@ -23,7 +23,6 @@ export default function Home() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const dropAreaRef = useRef<HTMLDivElement>(null);
 
-  // Handle image from various sources (file input, drag & drop, paste)
   const processImage = (file: File) => {
     setImage(file);
 
@@ -48,7 +47,6 @@ export default function Home() {
     }
   };
 
-  // Handle drag and drop events
   const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -82,15 +80,12 @@ export default function Home() {
     }
   };
 
-  // Handle paste events
   useEffect(() => {
     const handlePaste = (e: ClipboardEvent) => {
       if (e.clipboardData && e.clipboardData.items) {
-        // Loop through clipboard items
         for (let i = 0; i < e.clipboardData.items.length; i++) {
           const item = e.clipboardData.items[i];
           
-          // Check if the item is an image
           if (item.type.indexOf('image') !== -1) {
             const file = item.getAsFile();
             if (file) {
@@ -102,7 +97,6 @@ export default function Home() {
       }
     };
 
-    // Add paste event listener to the document
     document.addEventListener('paste', handlePaste);
 
     // Cleanup
@@ -111,7 +105,6 @@ export default function Home() {
     };
   }, []);
 
-  // Handle form submission
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -183,7 +176,7 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center bg-gradient-to-br from-indigo-50 to-blue-100">
+    <main className="flex min-h-screen flex-col items-center mt-20 bg-gradient-to-br from-indigo-50 to-blue-100">
       <div className="w-full max-w-4xl px-4 py-8">
         <motion.div
           initial={{ y: -20, opacity: 0 }}
